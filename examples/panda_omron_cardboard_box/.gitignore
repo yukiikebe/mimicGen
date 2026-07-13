@@ -1,0 +1,7 @@
+data/
+*.hdf5
+*.h5
+*.mp4
+*.npz
+__pycache__/
+*.py[cod]

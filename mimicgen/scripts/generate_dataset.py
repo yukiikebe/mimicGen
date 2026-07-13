@@ -35,7 +35,14 @@ import numpy as np
 from copy import deepcopy
 
 import robomimic
-from robomimic.utils.file_utils import get_env_metadata_from_dataset
+try:
+    from robomimic.utils.file_utils import get_env_metadata_from_dataset
+except ImportError:
+    def get_env_metadata_from_dataset(dataset_path):
+        import h5py
+
+        with h5py.File(dataset_path, "r") as f:
+            return json.loads(f["data"].attrs["env_args"])
 
 import mimicgen
 import mimicgen.utils.file_utils as MG_FileUtils

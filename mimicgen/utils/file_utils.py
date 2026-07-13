@@ -13,16 +13,39 @@ import datetime
 import shutil
 import shlex
 import tempfile
-import gdown
 import numpy as np
+try:
+    import gdown
+except ImportError:
+    gdown = None
 
 from glob import glob
 from tqdm import tqdm
-from huggingface_hub import hf_hub_download
+try:
+    from huggingface_hub import hf_hub_download
+except ImportError:
+    hf_hub_download = None
 
 import robomimic
-import robomimic.utils.tensor_utils as TensorUtils
-from robomimic.utils.file_utils import url_is_alive
+try:
+    import robomimic.utils.tensor_utils as TensorUtils
+except ImportError:
+    class _TensorUtilsFallback:
+        @staticmethod
+        def list_of_flat_dict_to_dict_of_list(list_of_dicts):
+            out = {}
+            for elem in list_of_dicts:
+                for key, value in elem.items():
+                    out.setdefault(key, []).append(value)
+            return out
+
+    TensorUtils = _TensorUtilsFallback()
+try:
+    from robomimic.utils.file_utils import url_is_alive
+except ImportError:
+    def url_is_alive(url):
+        del url
+        return True
 
 import mimicgen
 from mimicgen.datagen.datagen_info import DatagenInfo

@@ -2,6 +2,11 @@
 /datasets/
 training_results/
 paper/
+*.hdf5
+*.h5
+*.mp4
+*.npz
+CODEX_CONTEXT_SUMMARY.md
 
 
 # Mac OSX

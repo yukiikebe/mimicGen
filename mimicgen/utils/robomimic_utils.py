@@ -12,10 +12,34 @@ import argparse
 from copy import deepcopy
 
 import robomimic
-from robomimic.utils.log_utils import PrintLogger
-import robomimic.utils.env_utils as EnvUtils
-from robomimic.scripts.playback_dataset import playback_dataset, DEFAULT_CAMERAS
+try:
+    from robomimic.utils.log_utils import PrintLogger
+except ImportError:
+    class PrintLogger:
+        def __init__(self, log_file):
+            self.terminal = sys.__stdout__
+            self.log = open(log_file, "w")
 
+        def write(self, message):
+            self.terminal.write(message)
+            self.log.write(message)
+            self.flush()
+
+        def flush(self):
+            self.terminal.flush()
+            self.log.flush()
+
+try:
+    import robomimic.utils.env_utils as EnvUtils
+except ImportError:
+    EnvUtils = None
+try:
+    from robomimic.scripts.playback_dataset import playback_dataset, DEFAULT_CAMERAS
+except ImportError:
+    playback_dataset = None
+    DEFAULT_CAMERAS = {}
+
+from mimicgen.envs.mujoco_custom import EnvCustomCardboardBox
 from mimicgen.utils.misc_utils import deep_update
 
 
@@ -78,11 +102,13 @@ def create_env(
         env_meta["env_name"] = env_name
     if robot is not None:
         # for now, only support this argument for robosuite environments
+        assert EnvUtils is not None
         assert EnvUtils.is_robosuite_env(env_meta)
         assert robot in ["IIWA", "Sawyer", "UR5e", "Panda", "Jaco", "Kinova3"]
         env_meta["env_kwargs"]["robots"] = [robot]
     if gripper is not None:
         # for now, only support this argument for robosuite environments
+        assert EnvUtils is not None
         assert EnvUtils.is_robosuite_env(env_meta)
         assert gripper in ["PandaGripper", "RethinkGripper", "Robotiq85Gripper", "Robotiq140Gripper"]
         env_meta["env_kwargs"]["gripper_types"] = [gripper]
@@ -94,7 +120,32 @@ def create_env(
     if camera_names is None:
         camera_names = []
 
+    if env_meta.get("type") == "mujoco":
+        env_kwargs = deepcopy(env_meta["env_kwargs"])
+        env_kwargs.update(
+            dict(
+                camera_names=camera_names,
+                camera_height=camera_height,
+                camera_width=camera_width,
+                render=bool(render) if render is not None else False,
+                render_offscreen=bool(render_offscreen)
+                if render_offscreen is not None
+                else False,
+                use_image_obs=bool(use_image_obs)
+                if use_image_obs is not None
+                else False,
+            )
+        )
+        env = EnvCustomCardboardBox(
+            env_name=env_meta["env_name"],
+            **env_kwargs,
+        )
+        print("Created custom MuJoCo environment with name {}".format(env.name))
+        print("Action size is {}".format(env.action_dimension))
+        return env
+
     # create environment
+    assert EnvUtils is not None, "robomimic EnvUtils is required for non-MuJoCo envs"
     env = EnvUtils.create_env_for_data_processing(
         env_meta=env_meta,
         env_class=env_class,
@@ -145,6 +196,8 @@ def make_dataset_video(
     playback_args.first = False
 
     try:
+        if playback_dataset is None:
+            raise ImportError("robomimic playback_dataset is unavailable")
         playback_dataset(playback_args)
     except Exception as e:
         res_str = "playback failed with error:\n{}\n\n{}".format(e, traceback.format_exc())
@@ -162,4 +215,7 @@ def get_default_env_cameras(env_meta):
     Returns:
         camera_names (list of str): list of camera names that correspond to image observations
     """
+    if env_meta.get("type") == "mujoco":
+        return ["main_camera"]
+    assert EnvUtils is not None, "robomimic EnvUtils is required for non-MuJoCo envs"
     return DEFAULT_CAMERAS[EnvUtils.get_env_type(env_meta=env_meta)]

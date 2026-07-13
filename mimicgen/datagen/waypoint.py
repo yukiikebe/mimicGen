@@ -382,8 +382,10 @@ class WaypointTrajectory(object):
 
                 # maybe add noise to action
                 if waypoint.noise is not None:
-                    action_pose += waypoint.noise * np.random.randn(*action_pose.shape)
-                    action_pose = np.clip(action_pose, -1., 1.)
+                    if waypoint.noise != 0:
+                        action_pose += waypoint.noise * np.random.randn(*action_pose.shape)
+                    if getattr(env_interface, "CLIP_ACTIONS", True):
+                        action_pose = np.clip(action_pose, -1., 1.)
 
                 # add in gripper action
                 play_action = np.concatenate([action_pose, waypoint.gripper_action], axis=0)

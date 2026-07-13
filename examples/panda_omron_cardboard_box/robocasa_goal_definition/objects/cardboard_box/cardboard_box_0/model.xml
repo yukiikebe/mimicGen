@@ -1,0 +1,22 @@
+<mujoco model="cardboard_box_0">
+  <asset>
+    <material name="cardboard_box_mat" rgba="0.72 0.53 0.34 1" specular="0.15" shininess="0.25"/>
+  </asset>
+  <default>
+    <default class="region">
+      <geom group="1" conaffinity="0" contype="0" rgba="0 1 0 0"/>
+    </default>
+  </default>
+  <worldbody>
+    <body>
+      <body name="object" pos="0 0 0">
+        <geom name="cardboard_visual" type="box" size="0.075 0.050 0.015" material="cardboard_box_mat" conaffinity="0" contype="0" group="1"/>
+        <geom name="cardboard_collision" type="box" size="0.075 0.050 0.015" density="450" condim="4" friction="0.95 0.02 0.001" solimp="0.998 0.998 0.001" solref="0.004 1" group="0" rgba="0 0 0 0"/>
+        <geom class="region" name="reg_bbox" type="box" pos="0 0 0" size="0.075 0.050 0.015"/>
+        <site name="bottom_site" pos="0 0 -0.015" size="0.004" rgba="0 0 0 0"/>
+        <site name="top_site" pos="0 0 0.015" size="0.004" rgba="0 0 0 0"/>
+        <site name="horizontal_radius_site" pos="0.075 0.050 0" size="0.004" rgba="0 0 0 0"/>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

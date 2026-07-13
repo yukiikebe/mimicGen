@@ -35,6 +35,37 @@ Some helpful suggestions on useful documentation pages to view next:
 - [Data Generation for Custom Environments](https://mimicgen.github.io/docs/tutorials/datagen_custom.html)
 - [Overview of MimicGen Codebase](https://mimicgen.github.io/docs/modules/overview.html)
 
+## PandaOmron Cardboard-Box Example
+
+This fork includes a local MuJoCo/RoboCasa example for generating trajectories
+where a `PandaOmron` robot lifts a repo-local `cardboard_box` above four fragile
+transparent walls without breaking them.
+
+The reproducibility code is in:
+
+```text
+examples/panda_omron_cardboard_box/
+```
+
+That directory contains the runner, teleop-to-MimicGen conversion script,
+rendering helper, teleop scene helpers, cardboard-box object definition, and the
+scene XML used for the successful generation run. Generated results are not
+tracked: keep `.hdf5`, `.h5`, `.npz`, and `.mp4` files outside git, for example
+under `/tmp` or an ignored local `data/` directory.
+
+The successful generation recipe uses:
+
+- `contact_stand_grasp_lift` source subtask signals:
+  `gripper_contact -> box_stood -> grasp_ready -> final`
+- source-placement resets
+- fixed EEF rotation after the box stands
+- a latched position-based regrasp
+- `script_lift_height=0.22`
+- `--guarantee-success` when `--num-demos` should mean successful trajectories
+
+See `examples/panda_omron_cardboard_box/README.md` for the exact conversion,
+generation, and rendering commands.
+
 ## Troubleshooting
 
 Please see the [troubleshooting](https://mimicgen.github.io/docs/miscellaneous/troubleshooting.html) section for common fixes, or submit an issue on our github page.

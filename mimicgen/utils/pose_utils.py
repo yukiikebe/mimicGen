@@ -10,8 +10,21 @@ import math
 import collections
 import numpy as np
 
-import robosuite
-import robosuite.utils.transform_utils as T
+try:
+    import robosuite.utils.transform_utils as T
+except Exception:
+    from scipy.spatial.transform import Rotation
+
+    class _TransformUtilsFallback:
+        @staticmethod
+        def mat2quat(mat):
+            return Rotation.from_matrix(mat).as_quat()
+
+        @staticmethod
+        def quat2mat(quat):
+            return Rotation.from_quat(quat).as_matrix()
+
+    T = _TransformUtilsFallback()
 
 
 def make_pose(pos, rot):

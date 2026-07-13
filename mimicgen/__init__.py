@@ -11,6 +11,12 @@ except ImportError as e:
     print("WARNING: robosuite environment interfaces not imported...")
     print("Got error: {}".format(e))
 
+try:
+    from mimicgen.env_interfaces.mujoco import *
+except ImportError as e:
+    print("WARNING: mujoco environment interfaces not imported...")
+    print("Got error: {}".format(e))
+
 # import tasks to make sure they are added to robosuite task registry
 try:
     from mimicgen.envs.robosuite.threading import *
